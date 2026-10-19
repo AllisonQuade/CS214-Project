@@ -1,0 +1,7 @@
+name1,name2,similarity
+song1,song2,2.0
+song1,song3,2.8284271247461903
+song1,song4,2.1213203435596424
+song2,song3,NaN
+song2,song4,2.1213203435596424
+song3,song4,NaN

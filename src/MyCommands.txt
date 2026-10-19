@@ -1,0 +1,17 @@
+Read/Write file output PA1:
+gradle run -q --args="'<Input File Path>' '<Output File>"
+
+Read/Write file output PA2:
+gradle run -q --args="'<Input File Path>' '<Output File> '-a'"
+
+
+Run all test:
+gradle test
+
+Run individual class tests:
+gradle test --tests <ClassName>
+EX: gradle test --tests Test_Math
+
+Run individual method from test class:
+gradle test --tests <ClassName>.<MethodName>
+gradle test --tests Test_main.test_mainPA1_success
