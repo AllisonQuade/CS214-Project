@@ -1,3 +1,5 @@
+# CS214-Project
+Compare songs, users, and ratings from CSV files 
 # PA1 - Basic Song Stats
 
 # Motivation
