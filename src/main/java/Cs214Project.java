@@ -58,11 +58,17 @@ public class Cs214Project {
                     SongUserServicePA2.loadAndProcessData(input);
                     SongUserServicePA2.outputUsersSongsRatingsCSV(output);
                 }
-                case "-u" -> {
+                case "-3" -> { //????
                     //PA3
                     SongUserServicePA3V2 SongUserServicePA3 = new SongUserServicePA3V2();
                     SongUserServicePA3.loadAndProcessData(input);
                     SongUserServicePA3.outputUsersSongsRatingsCSV(output);
+                }
+                case "-u" -> {
+                    //PA4
+                    SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
+                    SongUserServicePA4.loadAndProcessData(input);
+                    SongUserServicePA4.outputUsersSongsRatingsCSV(output);
                 }
                 default -> {
                     // PA1

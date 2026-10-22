@@ -21,7 +21,7 @@ public class SongUserServicePA4 {
     private Double[][] dimensions;
 
     // #region PA1
-    public void loadAndProcessData(String inputFile) throws IOException { //for main
+    public void loadAndProcessData(String inputFile) throws IOException {
         loadSongsandUsersFromCSV(inputFile);
         dataCleaner();
         populateRatingPlaceHolderData();
@@ -71,6 +71,12 @@ public class SongUserServicePA4 {
 
     }
 
+    /** JavaDoc
+     * @param songName
+     * @param userName
+     * @param rating
+     * @return void
+     */
     private void processUserData(String songName, String userName, double rating) {
         Cs214User currentUser;
         // If the user list already contains that user grab the user
@@ -203,58 +209,63 @@ public class SongUserServicePA4 {
     // }
     public Double[][] calcSimilarity() throws IOException {
         validateCooperativeUsers();
+ 
+        int numUsers = this.userList.size();
+        this.dimensions = new Double[numUsers][numUsers];
 
-        int numSongs = this.masterSongNameList.size();
-        this.dimensions = new Double[numSongs][numSongs];
+        //https://www.tutorialspoint.com/article/how-to-get-treemap-key-or-value-using-index-in-java
+        List<Map.Entry<String, Cs214User>> users = new ArrayList<>(this.userList.entrySet());
 
-        for (int firstSongIndex = 0; firstSongIndex < numSongs; firstSongIndex++) {
-            for (int secondSongIndex = firstSongIndex + 1; secondSongIndex < numSongs; secondSongIndex++) {
-                dimensions[firstSongIndex][secondSongIndex] = calcSongPairDistance(firstSongIndex, secondSongIndex);
+        for (int firstUserIndex = 0; firstUserIndex < numUsers; firstUserIndex++)  {
+            for (int secondUserIndex = firstUserIndex + 1; secondUserIndex < numUsers; secondUserIndex++) {
+                dimensions[firstUserIndex][secondUserIndex] = calcSongPairDistance(users.get(firstUserIndex), users.get(secondUserIndex));
             }
         }
         return dimensions;
     }
 
-// Distance between song i and song s across all users (NaN if no user rated both)
-    private double calcSongPairDistance(int firstSongIndex, int secondSongIndex) {
-        double[] song1Rating = new double[userList.size()];
-        double[] song2Rating = new double[userList.size()];
-        boolean songsHaveSharedUser = false;
-        int userIndex = 0; // index tracker for the for-each loop
+// Distance between user firstUserIndex and user secondUserIndex across all songs they both rated (NaN if no both users didn't rate the song)
+    private double calcSongPairDistance(Map.Entry<String, Cs214User> firstUser, Map.Entry<String, Cs214User> secondUser) {
+        double[] song1Ratings = new double[masterSongNameList.size()];
+        double[] song2Ratings = new double[masterSongNameList.size()];
+        boolean usersHaveSharedSong = false;
 
-        for (Map.Entry<String, Cs214User> userEntry : this.userList.entrySet()) {
-            if (fillUserRatings(userEntry, firstSongIndex, secondSongIndex, userIndex, song1Rating, song2Rating)) {
-                songsHaveSharedUser = true;
+        ArrayList<Double> user1Ratings = getSongRatingArray(firstUser);
+        ArrayList<Double> user2Ratings = getSongRatingArray(secondUser);
+
+        for (int songIndex = 0; songIndex < user1Ratings.size(); songIndex++) {
+            if(fillUserRatings(firstUser, secondUser, songIndex, song1Ratings, song2Ratings)){
+                usersHaveSharedSong = true;
             }
-            userIndex++;
         }
 
-        if (!songsHaveSharedUser) {
+        if (!usersHaveSharedSong) {
             return Double.NaN;
         }
-        return new EuclideanDistance().compute(song1Rating, song2Rating);
+        return new EuclideanDistance().compute(song1Ratings, song2Ratings);
     }
 
-    private boolean fillUserRatings(Map.Entry<String, Cs214User> userEntry, int firstSongIndex, int secondSongIndex, int userIndex, double[] song1Rating, double[] song2Rating) {
-        ArrayList<Double> songRatingList = getSongRatingArray(userEntry); // turns treemap to array list
+    private boolean fillUserRatings(Map.Entry<String, Cs214User> userEntry1, Map.Entry<String, Cs214User> userEntry2, int songIndex, double[] song1Rating, double[] song2Rating) {
+        ArrayList<Double> songRatingList1 = getSongRatingArray(userEntry1); // turns treemap to array list
+         ArrayList<Double> songRatingList2 = getSongRatingArray(userEntry2);
 
         // get normalized ratings for euclidean distance
-        Double song1 = userEntry.getValue().getSongNormalizedRating(songRatingList.get(firstSongIndex));
-        Double song2 = userEntry.getValue().getSongNormalizedRating(songRatingList.get(secondSongIndex));
+        Double song1 = userEntry1.getValue().getSongNormalizedRating(songRatingList1.get(songIndex));
+        Double song2 = userEntry2.getValue().getSongNormalizedRating(songRatingList2.get(songIndex));
 
         if (song1.isNaN() || song2.isNaN()) {
-            song1Rating[userIndex] = 0.0;
-            song2Rating[userIndex] = 0.0;
+            song1Rating[songIndex] = 0.0;
+            song2Rating[songIndex] = 0.0;
             return false;
         }
 
-        song1Rating[userIndex] = song1;
-        song2Rating[userIndex] = song2;
+        song1Rating[songIndex] = song1;
+        song2Rating[songIndex] = song2;
         return true;
     }
 
     private void validateCooperativeUsers() {
-        if (this.userList.size() <= 1) {
+        if (this.userList.size() < 2) {
             throw new IllegalArgumentException("at least two cooperative users are required for song similarity");
         }
     }
@@ -285,9 +296,11 @@ public class SongUserServicePA4 {
 
             printerService = new CSVPrinterService(outputFile, headers);
 
+            List<Map.Entry<String, Cs214User>> usersArray = new ArrayList<>(this.userList.entrySet());
+
             for (int i = 0; i < dimensions.length; i++) {
                 for (int j = 0; j < dimensions.length; j++) {
-                    printRecord(printerService, i, j);
+                    printRecord(printerService, i, j, usersArray.get(i).getKey(), usersArray.get(j).getKey());
                 }
             }
 
@@ -299,9 +312,9 @@ public class SongUserServicePA4 {
     }
     // #endregion PA1
 
-    private void printRecord(CSVPrinterService printerService, int i, int j) throws IOException {
+    private void printRecord(CSVPrinterService printerService, int i, int j, String userName1, String userName2) throws IOException {
         if (this.dimensions[i][j] != null && (i != j && this.dimensions[i][j] > 0.0 || this.dimensions[i][j].equals(Double.NaN))) {
-            Object[] values = {masterSongNameList.get(i), masterSongNameList.get(j), dimensions[i][j]};
+            Object[] values = {userName1, userName2, dimensions[i][j]};
             printerService.printRecord(values);
         }
     }
