@@ -12,6 +12,10 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.math4.legacy.ml.distance.EuclideanDistance;
 
 // extends PA 
+/**
+ * 
+ * SongUserServicePA4
+ */
 public class SongUserServicePA4 {
 
     private TreeMap<String, Cs214Song> songList;
@@ -20,14 +24,31 @@ public class SongUserServicePA4 {
     private List<String> masterSongNameList;
     private Double[][] dimensions;
 
-    // #region PA1
-    public void loadAndProcessData(String inputFile) throws IOException {
+    /**
+     * deafult constructor
+     */
+    public SongUserServicePA4(){
+    }
+
+    /**
+     * Calls methods to load data, clean data, populate placeholder data, and calculate similarity.
+     * @param inputFile Input CSV file path.
+     * @throws IOException If load song and users from CSV fails.
+     */
+    public void loadAndProcessData(String inputFile) throws IOException{
         loadSongsandUsersFromCSV(inputFile);
         dataCleaner();
         populateRatingPlaceHolderData();
         calcSimilarity();
     }
 
+    /**
+     * Parses through input file .
+     * Populate and sort master song list with all unique songs.
+     * @param inputFile Input CSV file path.
+     * @return populated song list and user list.
+     * @throws IOException
+     */
     private LoadSongsandUsersFromCSV_Result loadSongsandUsersFromCSV(String inputFile) throws IOException {
 
         if (util_FormatOutput.isNullOrEmpty(inputFile)) {
@@ -72,10 +93,11 @@ public class SongUserServicePA4 {
     }
 
     /** JavaDoc
-     * @param songName
-     * @param userName
-     * @param rating
-     * @return void
+     * Processes user data.
+     * Calls methods from Cs214User to calculate mean and standard deviation.
+     * @param songName Name of song for user
+     * @param userName Name of user name for user.
+     * @param rating Numeric rating for users song.
      */
     private void processUserData(String songName, String userName, double rating) {
         Cs214User currentUser;
@@ -96,6 +118,13 @@ public class SongUserServicePA4 {
         currentUser.incrementsUserCount();
     }
 
+    /**
+     * Process song data.
+     * Calls Cs214Song methods to add song and rating.
+     * @param songName Song name.
+     * @param rating Numeric rating of song.
+     * @throws IOException if add rating fail. 
+     */
     private void processSongData(String songName, double rating) throws IOException {
         Cs214Song currentSong;
         // If the song list already contains that song grab the song
@@ -111,7 +140,11 @@ public class SongUserServicePA4 {
         currentSong.addRating(rating);
     }
 
-    public void dataCleaner() throws IOException {
+    /**
+     * Removes invalid users from data.
+     * Removes invalid user song from master song lsit if song only belonged to invalid user.
+     */
+    public void dataCleaner(){
         List<String> invalidUsers = new ArrayList<>();
 
         Set<String> validUserSongs = new TreeSet<>();
@@ -144,6 +177,14 @@ public class SongUserServicePA4 {
         }
     }
 
+    /**
+     * Determines if a user is invalid or valid.
+     * @param songNameRating Used to stepthrough user's songs and ratings.
+     * @param currentUserSongs List of all current user songs.
+     * @param firstRating Users first rating.
+     * @param invalidUser Status if user invalid or valid.
+     * @return true if invalid user, false if valid.
+     */
     private Boolean isInvalidUser(TreeMap<String, Double> songNameRating, Set<String> currentUserSongs, Double firstRating,
             Boolean invalidUser) {
         for (Map.Entry<String, Double> songEntry : songNameRating.entrySet()) { // stepthrough user's songs and
@@ -159,7 +200,11 @@ public class SongUserServicePA4 {
         return invalidUser;
     }
 
-    public void populateRatingPlaceHolderData() { //puts missing song from user into songList with NaN
+
+    /**
+     * Puts missing song from user into song list with NaN.
+     */
+    public void populateRatingPlaceHolderData() {
         for (String currentSongName : this.masterSongNameList) {
             for (Map.Entry<String, Cs214User> userEntry : this.userList.entrySet()) {
                 TreeMap<String, Double> songNameRating = userEntry.getValue().getSongList();
@@ -207,7 +252,11 @@ public class SongUserServicePA4 {
     //     }
     //     return dimensions;
     // }
-    public Double[][] calcSimilarity() throws IOException {
+    /**
+     * Calculates similarity between two users
+     * @return Matrix of similarity for first user and second user.
+     */
+    public Double[][] calcSimilarity(){
         validateCooperativeUsers();
  
         int numUsers = this.userList.size();
@@ -224,7 +273,12 @@ public class SongUserServicePA4 {
         return dimensions;
     }
 
-// Distance between user firstUserIndex and user secondUserIndex across all songs they both rated (NaN if no both users didn't rate the song)
+    /**
+     * Distance between user firstUserIndex and user secondUserIndex across all songs they both rated (NaN if no both users didn't rate the song)
+     * @param firstUser
+     * @param secondUser
+     * @return Euclidean distance between song of each user.
+     */
     private double calcSongPairDistance(Map.Entry<String, Cs214User> firstUser, Map.Entry<String, Cs214User> secondUser) {
         double[] song1Ratings = new double[masterSongNameList.size()];
         double[] song2Ratings = new double[masterSongNameList.size()];
@@ -245,6 +299,16 @@ public class SongUserServicePA4 {
         return new EuclideanDistance().compute(song1Ratings, song2Ratings);
     }
 
+    /**
+     * Populates matrix with normalized rating for both songs of each user.
+     * Normalize ratings for euclidean distance.
+     * @param userEntry1 User 1 map.
+     * @param userEntry2 User 2 map.
+     * @param songIndex Index of song used to compare users.
+     * @param song1Rating Dimension 1 of matrix.
+     * @param song2Rating Dimension 2 of matrix.
+     * @return True if , false if song1 or song 2 rating is NaN.
+     */
     private boolean fillUserRatings(Map.Entry<String, Cs214User> userEntry1, Map.Entry<String, Cs214User> userEntry2, int songIndex, double[] song1Rating, double[] song2Rating) {
         ArrayList<Double> songRatingList1 = getSongRatingArray(userEntry1); // turns treemap to array list
          ArrayList<Double> songRatingList2 = getSongRatingArray(userEntry2);
@@ -264,18 +328,30 @@ public class SongUserServicePA4 {
         return true;
     }
 
+    /**
+     * Used to require two cooperative user to compute user similarity.
+     */
     private void validateCooperativeUsers() {
         if (this.userList.size() < 2) {
-            throw new IllegalArgumentException("at least two cooperative users are required for song similarity");
+            throw new IllegalArgumentException("at least two cooperative users are required for user similarity");
         }
     }
 
+    /**
+     * Transforms song map into array.
+     * @param userEntry Used to get song list.
+     * @return Arraylist of ratings.
+     */
     private ArrayList<Double> getSongRatingArray(Map.Entry<String, Cs214User> userEntry) {
         TreeMap<String, Double> songNameRating = userEntry.getValue().getSongList();
         ArrayList<Double> songRating = new ArrayList<>(songNameRating.values());
         return songRating;
     }
 
+    /**
+     * Validate output arguments.
+     * @param outputFile Output CSV file path.
+     */
     public void validateArguments(String outputFile) {
         if (util_FormatOutput.isNullOrEmpty(outputFile)) {
             throw new IllegalArgumentException("Output file is required and must contain a file name.");
@@ -286,7 +362,12 @@ public class SongUserServicePA4 {
         }
     }
 
-    public void outputUsersSongsRatingsCSV(String outputFile) throws IOException {
+    /**
+     * Outputs user1 name, user2 name, and similarity between users.
+     * @param outputFile Output CSV file path.
+     * @throws IOException If printer service fail.
+     */
+    public void outputUsersSongsRatingsCSV(String outputFile)throws IOException {
         validateArguments(outputFile);
 
         CSVPrinterService printerService = null;
@@ -310,8 +391,16 @@ public class SongUserServicePA4 {
             }
         }
     }
-    // #endregion PA1
 
+    /**
+     * Outputs values objects array with user 1 name, user2 name, and dimensions matrix.
+     * @param printerService CSV printer used to print record.
+     * @param i Index 1 of matrix.
+     * @param j Index 2 of matrix.
+     * @param userName1 User 1's name.
+     * @param userName2 User 2's name.
+     * @throws IOException If printer fails.
+     */
     private void printRecord(CSVPrinterService printerService, int i, int j, String userName1, String userName2) throws IOException {
         if (this.dimensions[i][j] != null && (i != j && this.dimensions[i][j] > 0.0 || this.dimensions[i][j].equals(Double.NaN))) {
             Object[] values = {userName1, userName2, dimensions[i][j]};

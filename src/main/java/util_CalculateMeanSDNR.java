@@ -1,6 +1,11 @@
 
 import java.util.ArrayList;
 
+/**
+ * 
+ * util_CalculateMeanSDNR
+ * Abstract class
+ */
 public abstract class util_CalculateMeanSDNR {
 
     private double runningMean = 0.0;
@@ -13,6 +18,16 @@ public abstract class util_CalculateMeanSDNR {
     private double variance = 0.0;
     private double M2 = 0.0;
 
+    /**
+     * deafult constructor
+     */
+    public util_CalculateMeanSDNR(){
+    }
+
+    /**
+     * Calculate running mean and standard deviation for current user
+     * @param ratings Ratings array list used for calculations.
+     */
     public void calculateRunningMeanAndStandardDeviation(ArrayList<Double> ratings) {
         if (ratings == null) {
             throw new IllegalArgumentException("The parameter \"ratings\" is required.");
@@ -42,28 +57,30 @@ public abstract class util_CalculateMeanSDNR {
         }
     }
 
+    /**
+     * 
+     * @return Running mean calculated.
+     */
     public double getRunningMean() {
         return this.runningMean;
     }
 
+    /**
+     * @return Standard deviation calculated.
+     */
     public double getStandardDeviation() {
         return this.standardDeviation;
     }
 
+    /**
+     * Calculates normalized raring using raiting, running mean, and standard deviation.
+     * @param rating Rating of song used for calculation.
+     * @return Normalized rating.
+     */
     public double getSongNormalizedRating(double rating) {
         if (this.standardDeviation != 0) {
             return (rating - this.runningMean) / this.standardDeviation;
         }
         return 0.0;
     }
-
-    // //Searched up on google how to truncate
-    // public static double truncate6(double value) {
-    //     if (Double.isNaN(value)) { // Was getting error from populateRatingPlaceHolderData method about Character N is neither a decimal digit number. Fix
-    //         return value;
-    //     }
-    //     return BigDecimal.valueOf(value)
-    //             .setScale(6, RoundingMode.DOWN)
-    //             .doubleValue();
-    // }
 }

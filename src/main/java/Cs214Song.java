@@ -1,6 +1,10 @@
  import java.io.IOException;
  import java.util.ArrayList;
 
+ /**
+  * 
+  * Cs214Song
+  */
  public class Cs214Song extends util_CalculateMeanSDNR{
     private String songName; //stores name of song
     private int songCount = 0;
@@ -52,27 +56,16 @@
     }
     
 
+    /**
+     * Add rating and uses rating to calculate running mean and standard deviation.
+     * @param newRating Rating added to ratings array.
+     * @throws IOException
+     */
     public void addRating(double newRating) throws IOException{
       if(newRating < 0 || newRating > 5){
         throw new IllegalArgumentException("The rating" + newRating + "is out of bounds.");
       }
       this.ratings.add(newRating);
       super.calculateRunningMeanAndStandardDeviation(ratings);
-      // MathResult mathResult = Cs214Math.calculateRunningMeanAndStandardDeviation(ratings);
-      // this.runningMean = mathResult.getRunningMeanResult();
-      // this.standardDeviation = mathResult.getStandardDeviationResult();
     }
-
-    // public double getRunningMean(){
-    //   return this.runningMean;
-    // } 
-
-    // public double getStandardDeviation(){
-    //   return this.standardDeviation;
-    // }
-
-    // public double getNormalizedRating(){
-    //   return this.normalizedRating;
-    // }
-   
   }

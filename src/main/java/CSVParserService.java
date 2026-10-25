@@ -7,16 +7,30 @@ import java.io.StringReader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
+/**
+ * 
+ * CSVParserService
+ */
 public class CSVParserService {
   private String inputFile;
   private CSVParser parser = null;
   private Reader reader = null;
 
+  /**
+   * 
+   * Uses enum to determine if input file is a file path or a data string.
+   */
   public enum fileOrDataInput {
     FILEPATH, DATASTRING 
   }
 
-  public CSVParserService(String newInputFile, boolean skipHeader)throws IOException, FileNotFoundException { // create new file object for each file
+  /**
+   * Read and parse CSV input file.
+   * @param newInputFile Input CSV file path,
+   * @param skipHeader Choice of header.
+   * @throws IOException If input file null or empty, if input file not CSV
+   */
+  public CSVParserService(String newInputFile, boolean skipHeader)throws IOException { // create new file object for each file
 
     if (util_FormatOutput.isNullOrEmpty(newInputFile)) {
       throw new IllegalArgumentException("newInputFile is required and must contain a file path and file name.");
@@ -42,7 +56,14 @@ public class CSVParserService {
 
   }
 
-
+/**
+ * Read and parse through input file.
+ * Chooses between file path and data string input.
+ * @param inputFilePathOrDataString Choice of input type.
+ * @param inputFileOrString Enum type.
+ * @param skipHeader Choice to add or skip header.
+ * @throws IOException If input file null or empty or file data empty.
+ */
 public CSVParserService(String inputFilePathOrDataString, fileOrDataInput inputFileOrString, Boolean skipHeader) throws IOException{ // create new file object for each file
   if (util_FormatOutput.isNullOrEmpty(inputFilePathOrDataString)) {
       throw new IllegalArgumentException("inputFilePathOrDataString is required.");
@@ -77,10 +98,18 @@ public CSVParserService(String inputFilePathOrDataString, fileOrDataInput inputF
   }
 
 
+  /**
+   * Gets parser.
+   * @return CSV parser.
+   */
   public CSVParser getParser() {
     return this.parser;
   }
 
+  /**
+   * Closes CSV file.
+   * @throws IOException If reader or parser closes.
+   */
   public void closeCSVFile() throws IOException {
     if (this.parser != null) { // handles parser instance variable in THIS parser service
       this.parser.close();

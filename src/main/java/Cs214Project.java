@@ -8,20 +8,37 @@ import java.io.IOException;
 // ******************************************************************
 // gradle run -q --args="'database/files/file2.csv' 'output.csv'"gradle run -q --args="'database/files/file2.csv' 'output.csv'"
 // ******************************************************************
+
+/**
+ * 
+ * Cs214Project Main
+ */
 public class Cs214Project {
 
+    /**
+     * Calls methods to validate arguments passed in by user,
+     * @param args User input.
+     */
     public static void validateArguments(String[] args) {
         validateNumberOfArguments(args);
         validateFirstAndSecondArguments(args);
         validateThirdArguments(args);
     }
 
+    /**
+     * Checks if there are at least 2 or three arguments given.
+     * @param args User input.
+     */
     public static void validateNumberOfArguments(String[] args) {
         if (args.length < 2 || args.length > 3) {
             throw new IllegalArgumentException(args.length + " is out of bounds. Requires two or three arguments.");
         }
     }
 
+    /**
+     * Test that requires first and second argument is inputted.
+     * @param args User input.
+     */
     public static void validateFirstAndSecondArguments(String[] args) {
         if (util_FormatOutput.isNullOrEmpty(args[0])) {
             throw new IllegalArgumentException("Arguments 1 is required. It must include file input path.");
@@ -33,13 +50,23 @@ public class Cs214Project {
 
     }
 
+    /**
+     * Makes sure third argument is "-a", "-u", "-p" or "".
+     * @param args User input.
+     */
     public static void validateThirdArguments(String[] args) {
-        if (args.length == 3 && !args[2].equals("-a") && !args[2].equals("-u") && !args[2].equals("")) {
-            throw new IllegalArgumentException("\"-a\" or \"-u\" required for PA2 or PA3.");
+        if (args.length == 3 && !args[2].equals("-a") && !args[2].equals("-u") && !args[2].equals("-p") && !args[2].equals("")) {
+            throw new IllegalArgumentException("\"-a\" or \"-u\" required for PA2 or PA4.");
         }
 
     }
 
+    /**
+     * Runs program for each PA
+     * @param args user inputs
+     * @throws IOException
+     * @throws FileNotFoundException
+     */
     public static void main(String[] args) throws IOException, FileNotFoundException {
         // Open the project in Codio's integrated Visual Studio Code!
         // See Hints or README.md for more information

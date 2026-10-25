@@ -1,5 +1,9 @@
 import java.util.TreeMap;
 
+/**
+ * 
+ * Cs214User
+ */
 public class Cs214User extends util_CalculateMeanSDNR {
 
     private String userName;

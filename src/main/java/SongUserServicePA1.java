@@ -5,7 +5,10 @@ import java.util.TreeMap;
 import org.apache.commons.csv.CSVRecord;
 //DLLs ^
 
-// extends PA 
+/**
+ * 
+ * SongUserServicePA1
+ */
 public class SongUserServicePA1 {
     // https://www.geeksforgeeks.org/java/sorting-hashmap-according-key-value-java/
     // use object to return song and users so you don't have to read file multiple
@@ -13,7 +16,21 @@ public class SongUserServicePA1 {
     // private LoadSongsandUsersFromCSV_Result result;
 
     // #region PA1
-    // @Override
+    
+    /**
+     * deafult constructor
+     */
+    public SongUserServicePA1(){
+    }
+
+
+    /**
+     * Loads in input file path. 
+     * Uses CSVParserService to parse through inputFile. 
+     * @param inputFile A CSV input file path.
+     * @return songList and userList.
+     * @throws IOException If input file is null or empty.
+     */
     public LoadSongsandUsersFromCSV_Result loadSongsandUsersFromCSV(String inputFile) throws IOException {
 
         if (util_FormatOutput.isNullOrEmpty(inputFile)) {
@@ -53,6 +70,13 @@ public class SongUserServicePA1 {
 
     }
 
+    /**
+     * Populates user list wth user contents from input file.
+     * @param userList The user list being populated.
+     * @param songName Name of song for current user.
+     * @param userName Name of user for current user.
+     * @param rating Numeric rating from the user.
+     */
     private void processUserData(TreeMap<String, Cs214User> userList, String songName, String userName, double rating) {
         Cs214User currentUser;
         // If the user list already contains that user grab the user
@@ -68,6 +92,13 @@ public class SongUserServicePA1 {
         currentUser.incrementsUserCount();
     }
 
+    /**
+     * Populates song list with sing content from input file.
+     * @param songList The song list being populated.
+     * @param songName The name of the current song.
+     * @param rating The numeric rating to the current song.
+     * @throws IOException If invalid rating.
+     */
     private void processSongData(TreeMap<String, Cs214Song> songList, String songName, double rating) throws IOException {
         Cs214Song currentSong;
         // If the song list already contains that song grab the song
@@ -84,8 +115,12 @@ public class SongUserServicePA1 {
         currentSong.addRating(rating);
     }
 
-    // @Override
-    // /
+    /**
+     * Output song name, number of ratings for song, mean, and standard deviation.
+     * @param outputFile Output CSV file path created by user to output data to.
+     * @param songs Song list used to populate output.
+     * @throws IOException If output file is null or empty and if song map is null.
+     */
     public void outputUsersSongsRatingsCSV(String outputFile, TreeMap<String, Cs214Song> songs) throws IOException {
         // TreeMap<String, Cs214Song> songs = result.songList;
         if (util_FormatOutput.isNullOrEmpty(outputFile)) {
