@@ -14,10 +14,11 @@ import org.apache.commons.math4.legacy.ml.distance.EuclideanDistance;
 // extends PA 
 /**
  * 
- * SongUserServicePA4
+ * SongUserServicePA4 
+ * This service handles importing csv file and analyzing that data to display user similarity user rating prediction
  */
 public class SongUserServicePA4 {
-
+    
     private TreeMap<String, Cs214Song> songList;
     private TreeMap<String, Cs214User> userList;
     //private ArrayList<Double> userRatingList;
