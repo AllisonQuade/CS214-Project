@@ -4,7 +4,7 @@ import java.util.TreeMap;
  * 
  * Cs214User
  */
-public class Cs214User extends util_CalculateMeanSDNR {
+public class Cs214User extends util_CalculateMeanSDNR implements Comparable<Cs214User> {
 
     private String userName;
     private int userCount = 0;
@@ -16,6 +16,11 @@ public class Cs214User extends util_CalculateMeanSDNR {
             throw new IllegalArgumentException("The prarameter \"newUserName\" is required.");
         }
         this.userName = newUserName;
+    }
+
+    @Override //take in Cs214User, returns compared username
+    public int compareTo(Cs214User other) {
+         return this.userName.compareTo(other.userName);
     }
 
     public void incrementsUserCount() {

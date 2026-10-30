@@ -73,7 +73,7 @@ public abstract class util_CalculateMeanSDNR {
     }
 
     /**
-     * Calculates normalized raring using raiting, running mean, and standard deviation.
+     * Calculates normalized rating using rating, running mean, and standard deviation.
      * @param rating Rating of song used for calculation.
      * @return Normalized rating.
      */

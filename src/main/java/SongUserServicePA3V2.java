@@ -21,7 +21,7 @@ public class SongUserServicePA3V2 {
     private TreeMap<String, Cs214User> userList;
     //private ArrayList<Double> userRatingList;
     private List<String> masterSongNameList;
-    private Double[][] dimensions;
+    private Double[][] songSimilarityMatrix;
 
     /**
      * deafult constructor
@@ -256,14 +256,14 @@ public class SongUserServicePA3V2 {
         validateCooperativeUsers();
 
         int numSongs = this.masterSongNameList.size();
-        this.dimensions = new Double[numSongs][numSongs];
+        this.songSimilarityMatrix = new Double[numSongs][numSongs];
 
         for (int firstSongIndex = 0; firstSongIndex < numSongs; firstSongIndex++) {
             for (int secondSongIndex = firstSongIndex + 1; secondSongIndex < numSongs; secondSongIndex++) {
-                dimensions[firstSongIndex][secondSongIndex] = calcSongPairDistance(firstSongIndex, secondSongIndex);
+                songSimilarityMatrix[firstSongIndex][secondSongIndex] = calcSongPairDistance(firstSongIndex, secondSongIndex);
             }
         }
-        return dimensions;
+        return songSimilarityMatrix;
     }
 
     /**
@@ -370,8 +370,8 @@ public class SongUserServicePA3V2 {
 
             printerService = new CSVPrinterService(outputFile, headers);
 
-            for (int i = 0; i < dimensions.length; i++) {
-                for (int j = 0; j < dimensions.length; j++) {
+            for (int i = 0; i < songSimilarityMatrix.length; i++) {
+                for (int j = 0; j < songSimilarityMatrix.length; j++) {
                     printRecord(printerService, i, j);
                 }
             }
@@ -392,8 +392,8 @@ public class SongUserServicePA3V2 {
      * @throws IOException if printer fails.
      */
     private void printRecord(CSVPrinterService printerService, int i, int j) throws IOException {
-        if (this.dimensions[i][j] != null && (i != j && this.dimensions[i][j] > 0.0 || this.dimensions[i][j].equals(Double.NaN))) {
-            Object[] values = {masterSongNameList.get(i), masterSongNameList.get(j), dimensions[i][j]};
+        if (this.songSimilarityMatrix[i][j] != null && (i != j && this.songSimilarityMatrix[i][j] > 0.0 || this.songSimilarityMatrix[i][j].equals(Double.NaN))) {
+            Object[] values = {masterSongNameList.get(i), masterSongNameList.get(j), songSimilarityMatrix[i][j]};
             printerService.printRecord(values);
         }
     }

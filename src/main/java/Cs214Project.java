@@ -1,4 +1,3 @@
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -56,7 +55,7 @@ public class Cs214Project {
      */
     public static void validateThirdArguments(String[] args) {
         if (args.length == 3 && !args[2].equals("-a") && !args[2].equals("-u") && !args[2].equals("-p") && !args[2].equals("")) {
-            throw new IllegalArgumentException("\"-a\" or \"-u\" required for PA2 or PA4.");
+            throw new IllegalArgumentException("\"-a\" or \"-u\" or \"-p\"  required for PA2 or PA4.");
         }
 
     }
@@ -94,8 +93,13 @@ public class Cs214Project {
                 case "-u" -> {
                     //PA4
                     SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
-                    SongUserServicePA4.loadAndProcessData(input);
+                    SongUserServicePA4.loadAndProcessDataUserSimilarity(input);
                     SongUserServicePA4.outputUsersSongsRatingsCSV(output);
+                }
+                case "-p" ->{
+                    SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
+                    SongUserServicePA4.loadAndProcessDataPrediction(input);
+                    SongUserServicePA4.outputUsersSongsRatingPredictionsCSV(output);
                 }
                 default -> {
                     // PA1

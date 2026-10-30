@@ -2,3 +2,6 @@ name1,name2,similarity
 user1,user2,0.29289321881345265
 user1,user3,1.7320508075688772
 user1,user4,0.29289321881345265
+user2,user3,0.0
+user2,user4,0.0
+user3,user4,0.0

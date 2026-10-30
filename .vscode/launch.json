@@ -10,7 +10,7 @@
             "request": "launch",
             "mainClass": "Cs214Project",
             "projectName": "workspace",
-            "args": ["database/files/file3_pa3.csv", "pa3GUIDEoutput.csv", "-u"]
+            "args": ["database/files/PA4_file4.csv", "predictionOutput.csv", "-p"]
         },
         // {
         //     "type": "java",
