@@ -26,8 +26,8 @@ public class SongUserServicePA2 {
     /**
      * deafult constructor
      */
-    public SongUserServicePA2(){
-    }
+    // public SongUserServicePA2(){
+    // }
 
     /**
      * Calls methods to load data and clean data.

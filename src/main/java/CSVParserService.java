@@ -21,25 +21,20 @@ public class CSVParserService {
    * Uses enum to determine if input file is a file path or a data string.
    */
   public enum fileOrDataInput {
-    FILEPATH, DATASTRING 
+    FILEPATH, DATASTRING
   }
 
   /**
    * Read and parse CSV input file.
+   * 
    * @param newInputFile Input CSV file path,
-   * @param skipHeader Choice of header.
+   * @param skipHeader   Choice of header.
    * @throws IOException If input file null or empty, if input file not CSV
    */
-  public CSVParserService(String newInputFile, boolean skipHeader)throws IOException { // create new file object for each file
+  public CSVParserService(String newInputFile, boolean skipHeader) throws IOException { // create new file object for
+                                                                                        // each file
 
-    if (util_FormatOutput.isNullOrEmpty(newInputFile)) {
-      throw new IllegalArgumentException("newInputFile is required and must contain a file path and file name.");
-    }
-
-    boolean fileEnd = newInputFile.endsWith("csv");
-    if (!fileEnd) {
-      throw new IllegalArgumentException("The parameter \"newInputFile\" must have `.csv` extension");
-    }
+    validateInputFile(newInputFile);
 
     this.inputFile = newInputFile;
 
@@ -56,35 +51,33 @@ public class CSVParserService {
 
   }
 
-/**
- * Read and parse through input file.
- * Chooses between file path and data string input.
- * @param inputFilePathOrDataString Choice of input type.
- * @param inputFileOrString Enum type.
- * @param skipHeader Choice to add or skip header.
- * @throws IOException If input file null or empty or file data empty.
- */
-public CSVParserService(String inputFilePathOrDataString, fileOrDataInput inputFileOrString, Boolean skipHeader) throws IOException{ // create new file object for each file
-  if (util_FormatOutput.isNullOrEmpty(inputFilePathOrDataString)) {
-      throw new IllegalArgumentException("inputFilePathOrDataString is required.");
-  }
-  switch(inputFileOrString) //-> rule switch
-  {
-    case FILEPATH -> {
-        boolean fileEnd = inputFilePathOrDataString.endsWith("csv");
-        if (!fileEnd) {
-            throw new IllegalStateException("The parameter \"newInputFile\" must have `.csv` extension");
-        }
-        this.inputFile = inputFilePathOrDataString;
-        
-        this.reader = new FileReader(this.inputFile); // opening text file
-          }
+  private void validateInputFile(String newInputFile) {
+    if (util_FormatOutput.isNullOrEmpty(newInputFile)) {
+      throw new IllegalArgumentException("newInputFile is required and must contain a file path and file name.");
+    }
 
-    case DATASTRING -> {
-        this.reader = new StringReader(inputFilePathOrDataString); // opening text file
-          }
+    boolean fileEnd = newInputFile.endsWith("csv");
+    if (!fileEnd) {
+      throw new IllegalArgumentException("The parameter \"newInputFile\" must have `.csv` extension");
+    }
   }
-  
+
+  /**
+   * Read and parse through input file.
+   * Chooses between file path and data string input.
+   * 
+   * @param inputFilePathOrDataString Choice of input type.
+   * @param inputFileOrString         Enum type.
+   * @param skipHeader                Choice to add or skip header.
+   * @throws IOException If input file null or empty or file data empty.
+   */
+  public CSVParserService(String inputFilePathOrDataString, fileOrDataInput inputFileOrString, Boolean skipHeader)
+      throws IOException { // create new file object for each file
+    if (util_FormatOutput.isNullOrEmpty(inputFilePathOrDataString)) {
+      throw new IllegalArgumentException("inputFilePathOrDataString is required.");
+    }
+    inputFileReaderChoice(inputFilePathOrDataString, inputFileOrString);
+
     CSVFormat inputFormat = CSVFormat.DEFAULT.builder() // open file
         .setSkipHeaderRecord(skipHeader)
         .build();
@@ -97,9 +90,29 @@ public CSVParserService(String inputFilePathOrDataString, fileOrDataInput inputF
 
   }
 
+  private void inputFileReaderChoice(String inputFilePathOrDataString, fileOrDataInput inputFileOrString)
+      throws FileNotFoundException {
+    switch (inputFileOrString) // -> rule switch
+    {
+      case FILEPATH -> {
+        boolean fileEnd = inputFilePathOrDataString.endsWith("csv");
+        if (!fileEnd) {
+          throw new IllegalStateException("The parameter \"newInputFile\" must have `.csv` extension");
+        }
+        this.inputFile = inputFilePathOrDataString;
+
+        this.reader = new FileReader(this.inputFile); // opening text file
+      }
+
+      case DATASTRING -> {
+        this.reader = new StringReader(inputFilePathOrDataString); // opening text file
+      }
+    }
+  }
 
   /**
    * Gets parser.
+   * 
    * @return CSV parser.
    */
   public CSVParser getParser() {
@@ -108,6 +121,7 @@ public CSVParserService(String inputFilePathOrDataString, fileOrDataInput inputF
 
   /**
    * Closes CSV file.
+   * 
    * @throws IOException If reader or parser closes.
    */
   public void closeCSVFile() throws IOException {

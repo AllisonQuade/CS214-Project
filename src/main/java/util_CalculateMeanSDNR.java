@@ -19,10 +19,10 @@ public abstract class util_CalculateMeanSDNR {
     private double M2 = 0.0;
 
     /**
-     * deafult constructor
+     * default constructor
      */
-    public util_CalculateMeanSDNR(){
-    }
+    // public util_CalculateMeanSDNR(){
+    // }
 
     /**
      * Calculate running mean and standard deviation for current user

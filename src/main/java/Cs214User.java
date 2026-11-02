@@ -4,7 +4,7 @@ import java.util.TreeMap;
  * 
  * Cs214User
  */
-public class Cs214User extends util_CalculateMeanSDNR implements Comparable<Cs214User> {
+public class Cs214User extends util_CalculateMeanSDNR implements Comparable<Cs214User> { //comparable used to sort by name
 
     private String userName;
     private int userCount = 0;

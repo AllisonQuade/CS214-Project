@@ -4,10 +4,10 @@
  */
 public class util_FormatOutput {
     /**
-     * deafult constructor
+     * default constructor
      */
-    public util_FormatOutput(){
-    }
+    // public util_FormatOutput(){
+    // }
 
     /**
      * Determines if an input string is null or empty.

@@ -19,19 +19,19 @@ import org.apache.commons.math4.legacy.ml.distance.EuclideanDistance;
  */
 public class SongUserServicePA4 {
 
-    private TreeMap<String, Cs214Song> songList;
     private TreeMap<String, Cs214User> userList;
-    // private ArrayList<Double> userRatingList;
     private List<String> masterSongNameList;
     private Double[][] userSimilarityMatrix;
     private TreeMap<Cs214User, TreeMap<Double, Cs214User>> similarUserList;
     private TreeMap<String, Double> userSongRatingPredictions;
 
+    private CSVPrinterService printerService = null;
+
     /**
      * deafult constructor
      */
-    public SongUserServicePA4() {
-    }
+    // public SongUserServicePA4() {
+    // }
 
     /**
      * Calls methods to load data, clean data, populate placeholder data, and
@@ -41,13 +41,13 @@ public class SongUserServicePA4 {
      * @throws IOException If load songlist.entrySet() and users from CSV fails.
      */
     public void loadAndProcessDataUserSimilarity(String inputFile) throws IOException {
-        loadSongsandUsersFromCSV(inputFile);
+        loadUsersFromCSV(inputFile);
         dataCleaner();
         populateRatingPlaceHolderData();
         calcSimilarity();
     }
 
-    public void loadAndProcessDataPrediction(String inputFile) throws IOException{
+    public void loadAndProcessDataPrediction(String inputFile) throws IOException {
         loadAndProcessDataUserSimilarity(inputFile);
         predictMissingUserSongRating();
     }
@@ -60,16 +60,14 @@ public class SongUserServicePA4 {
      * @return populated songlist.entrySet() list and user list.
      * @throws IOException
      */
-    private LoadSongsandUsersFromCSV_Result loadSongsandUsersFromCSV(String inputFile) throws IOException {
+    private TreeMap<String, Cs214User> loadUsersFromCSV(String inputFile) throws IOException {
 
         if (util_FormatOutput.isNullOrEmpty(inputFile)) {
             throw new IllegalArgumentException(
                     "Input file is required and must contain a file path and file name.");
         }
 
-        this.songList = new TreeMap<>();
         this.userList = new TreeMap<>();
-        // this.userRatingList = new ArrayList<>();
 
         this.masterSongNameList = new ArrayList<>();
 
@@ -88,19 +86,14 @@ public class SongUserServicePA4 {
                 masterSongNameList.add(songName);
             }
 
-            processSongData(songName, rating);
-
             processUserData(songName, userName, rating);
 
             Collections.sort(masterSongNameList); // sorts final master list
         }
 
-        // if (!parserService.equals(null)) { // handles the parserService object to
-        // make sure it was created successfully
         parserService.closeCSVFile();
-        // }
 
-        return new LoadSongsandUsersFromCSV_Result(songList, userList);
+        return userList;
 
     }
 
@@ -130,30 +123,6 @@ public class SongUserServicePA4 {
         currentUser.calculateRunningMeanAndStandardDeviation(new ArrayList<>(currentUser.getSongList().values()));
 
         currentUser.incrementsUserCount();
-    }
-
-    /**
-     * Process songlist.entrySet() data.
-     * Calls Cs214Song methods to add songlist.entrySet() and rating.
-     * 
-     * @param songName Song name.
-     * @param rating   Numeric rating of songlist.entrySet().
-     * @throws IOException if add rating fail.
-     */
-    private void processSongData(String songName, double rating) throws IOException {
-        Cs214Song currentSong;
-        // If the songlist.entrySet() list already contains that songlist.entrySet()
-        // grab the songlist.entrySet()
-        if (songList.containsKey(songName)) {
-            currentSong = songList.get(songName);
-        } // Otherwise add songlist.entrySet()
-        else {
-            currentSong = new Cs214Song(songName);
-            songList.put(songName, currentSong);
-        }
-
-        currentSong.incrementsSongCount();
-        currentSong.addRating(rating);
     }
 
     /**
@@ -290,30 +259,39 @@ public class SongUserServicePA4 {
         this.userSimilarityMatrix = new Double[numUsers][numUsers];
 
         // https://www.tutorialspoint.com/article/how-to-get-treemap-key-or-value-using-index-in-java
-        List<Map.Entry<String, Cs214User>> users = new ArrayList<>(this.userList.entrySet()); // list of map entries
-        this.similarUserList = new TreeMap<>();
 
-        for (int firstUserIndex = 0; firstUserIndex < numUsers; firstUserIndex++) {
-            for (int secondUserIndex = 0; secondUserIndex < numUsers; secondUserIndex++) { // firstUserIndex
-                // + 1
-                double calcSongPair = calcSongPairDistance(users.get(firstUserIndex), users.get(secondUserIndex));
+        initilizeSimilarUserListKey();
+
+        int firstUserIndex = 0;
+        for (Map.Entry<String, Cs214User> userEntryRow : this.userList.entrySet()) {
+            int secondUserIndex = 0;
+            for (Map.Entry<String, Cs214User> userEntryColumn : this.userList.entrySet()) {
+                double calcSongPair = calcSongPairDistance(userEntryRow.getValue(), userEntryColumn.getValue());
                 userSimilarityMatrix[firstUserIndex][secondUserIndex] = calcSongPair;
-                userSimilarityMatrix[secondUserIndex][firstUserIndex] = calcSongPair;
+                // userSimilarityMatrix[secondUserIndex][firstUserIndex] = calcSongPair;
 
+                populateUserSimilarityMap(userEntryRow.getValue(), userEntryColumn.getValue(), calcSongPair);
+
+                secondUserIndex++;
             }
+            firstUserIndex++;
         }
+    }
 
-        // populate user similarity nested treemap
-        for (int rowIndex = 0; rowIndex < numUsers; rowIndex++) {
-            TreeMap<Double, Cs214User> similarityAndSimilarUser = new TreeMap<>();
-            for (int columnIndex = 0; columnIndex < numUsers; columnIndex++) {
-                if (rowIndex != columnIndex && !userSimilarityMatrix[rowIndex][columnIndex].isNaN()) {
-                    similarityAndSimilarUser.put(userSimilarityMatrix[rowIndex][columnIndex],
-                            users.get(columnIndex).getValue());
-                }
-            }
+    private void initilizeSimilarUserListKey() {
+        this.similarUserList = new TreeMap<>();
+        for (Map.Entry<String, Cs214User> userEntry : userList.entrySet()) { // populate similarUserList treemap for all
+                                                                             // users
+            this.similarUserList.put(userEntry.getValue(), new TreeMap<Double, Cs214User>());
+        }
+    }
 
-            this.similarUserList.put(users.get(rowIndex).getValue(), similarityAndSimilarUser);
+    private void populateUserSimilarityMap(Cs214User userEntryRow, Cs214User userEntryColumn, Double similarityValue) {
+        if (userEntryRow != userEntryColumn && !similarityValue.isNaN()) {
+            // can use key to get user
+            TreeMap<Double, Cs214User> user1NestedTreeMap = similarUserList.get(userEntryRow); // get user key from the
+                                                                                               // treemap
+            user1NestedTreeMap.put(similarityValue, userEntryColumn);
         }
     }
 
@@ -326,8 +304,7 @@ public class SongUserServicePA4 {
      * @param secondUser
      * @return Euclidean distance between songlist.entrySet() of each user.
      */
-    private double calcSongPairDistance(Map.Entry<String, Cs214User> firstUser,
-            Map.Entry<String, Cs214User> secondUser) {
+    private double calcSongPairDistance(Cs214User firstUser, Cs214User secondUser) {
 
         if (firstUser == secondUser) {
             return 0.0;
@@ -337,48 +314,30 @@ public class SongUserServicePA4 {
         double[] song2Ratings = new double[masterSongNameList.size()];
         boolean usersHaveSharedSong = false;
 
-        ArrayList<Double> songRatingList1 = getSongRatingArray(firstUser); // turns treemap to array list
-        ArrayList<Double> songRatingList2 = getSongRatingArray(secondUser);
+        TreeMap<String, Double> secondUserSongList = secondUser.getSongList();
+        int index = 0;
 
-        for (int songIndex = 0; songIndex < masterSongNameList.size(); songIndex++) {
-            // get normalized ratings for euclidean distance
-            Double song1 = firstUser.getValue().getSongNormalizedRating(songRatingList1.get(songIndex));
-            Double song2 = secondUser.getValue().getSongNormalizedRating(songRatingList2.get(songIndex));
+        for (Map.Entry<String, Double> songNameRatingEntry : firstUser.getSongList().entrySet()) {
+            Double song1 = firstUser.getSongNormalizedRating(songNameRatingEntry.getValue());
+            Double song2 = secondUser.getSongNormalizedRating(secondUserSongList.get(songNameRatingEntry.getKey()));
 
-            if (fillUserRatings(songIndex, song1, song2, song1Ratings, song2Ratings)) {
+            if (!Double.isFinite(song1) || !Double.isFinite(song2)) { // isFinite returns true if its not infinity or
+                                                                      // NaN
+                song1Ratings[index] = 0.0;
+                song2Ratings[index] = 0.0;
+            } else {
+                song1Ratings[index] = song1;
+                song2Ratings[index] = song2;
                 usersHaveSharedSong = true;
             }
+            index++;
         }
 
         if (!usersHaveSharedSong) {
             return Double.NaN;
         }
+
         return new EuclideanDistance().compute(song1Ratings, song2Ratings);
-    }
-
-    /**
-     * Populates matrix with normalized rating for both songs of each user.
-     * Normalize ratings for euclidean distance.
-     * 
-     * @param userEntry1   User 1 map.
-     * @param userEntry2   User 2 map.
-     * @param songIndex    Index of songlist.entrySet() used to compare users.
-     * @param song1Ratings Dimension 1 of matrix.
-     * @param song2Ratings Dimension 2 of matrix.
-     * @return True if , false if song1 or songlist.entrySet() 2 rating is NaN.
-     */
-    private boolean fillUserRatings(int songIndex, Double song1, Double song2, double[] song1Ratings,
-            double[] song2Ratings) {
-
-        if (song1.isNaN() || song2.isNaN()) {
-            song1Ratings[songIndex] = 0.0;
-            song2Ratings[songIndex] = 0.0;
-            return false;
-        }
-
-        song1Ratings[songIndex] = song1;
-        song2Ratings[songIndex] = song2;
-        return true;
     }
 
     /**
@@ -388,18 +347,6 @@ public class SongUserServicePA4 {
         if (this.userList.size() < 2) {
             throw new IllegalArgumentException("at least two cooperative users are required for user similarity");
         }
-    }
-
-    /**
-     * Transforms songlist.entrySet() map into array.
-     * 
-     * @param userEntry Used to get songlist.entrySet() list.
-     * @return Arraylist of ratings.
-     */
-    private ArrayList<Double> getSongRatingArray(Map.Entry<String, Cs214User> userEntry) {
-        TreeMap<String, Double> songNameRating = userEntry.getValue().getSongList();
-        ArrayList<Double> songRating = new ArrayList<>(songNameRating.values());
-        return songRating;
     }
 
     /**
@@ -417,50 +364,64 @@ public class SongUserServicePA4 {
         }
     }
 
+    /**
+     * Predict a target user's empty rating based on the most similar users rating
+     */
     public void predictMissingUserSongRating() {
         this.userSongRatingPredictions = new TreeMap<>();
         // targetUser: User that is missing rating data.
         // otherUser: user that is the closest in similarity to targetUser.
 
-        //Loop through all users as targets
+        // Loop through all users as targets
         for (Map.Entry<Cs214User, TreeMap<Double, Cs214User>> userEntry : this.similarUserList.entrySet()) {
-            Cs214User targetUser = userEntry.getKey();
-            TreeMap<String, Double> songListUser1 = targetUser.getSongList();
+            TreeMap<String, Double> songListUser1 = userEntry.getKey().getSongList();
 
-            // Loop through target users songs
-            for (Map.Entry<String, Double> songEntry : songListUser1.entrySet()) {  
-                if (songEntry.getValue().equals(Double.NaN)) {
-                    double predictedRating = Double.NaN;
-                    String key = songEntry.getKey() + "," + userEntry.getKey().getUserName();
+            predictTargetUserSongRatings(userEntry, songListUser1);
 
-                    //Loop through target user similar user list
-                    for (Map.Entry<Double, Cs214User> similarUserEntry : userEntry.getValue().entrySet()) { 
-                        // get most similar user (other user) and check to see if they rated
-                        // targetuser's song
-                        TreeMap<String, Double> songListUser2 = similarUserEntry.getValue().getSongList();
-                        Double user2SongRating = songListUser2.get(songEntry.getKey());
-                        if (!user2SongRating.isNaN()) { // checks if valid rating
-                            double otherUserNormalizedRating = similarUserEntry.getValue().getSongNormalizedRating(user2SongRating);
-
-                            //de-normalizing predicted rating
-                            predictedRating = Math.round(otherUserNormalizedRating * targetUser.getStandardDeviation() + targetUser.getRunningMean());
-                            if(predictedRating < 1.0){
-                                predictedRating = 1.0;
-                            }
-                            else if(predictedRating > 5.0){
-                                predictedRating = 5.0;
-                            }
-
-                            break;
-                        }
-                    }
-                    this.userSongRatingPredictions.put(key, predictedRating);
-                }
-            }
-            if(userSongRatingPredictions.size() == 0){
+            if (userSongRatingPredictions.size() == 0) {
                 throw new IllegalArgumentException("All users rated all songs. No predictions needed.");
             }
         }
+    }
+
+    private void predictTargetUserSongRatings(Map.Entry<Cs214User, TreeMap<Double, Cs214User>> userEntry,
+            TreeMap<String, Double> songListUser1) {
+        // Loop through target users songs
+        for (Map.Entry<String, Double> songEntry : songListUser1.entrySet()) {
+            if (songEntry.getValue().equals(Double.NaN)) {
+                String key = songEntry.getKey() + "," + userEntry.getKey().getUserName();
+
+                double predictedRating = calculatePredictedRating(userEntry, songEntry);
+
+                this.userSongRatingPredictions.put(key, predictedRating);
+            }
+        }
+    }
+
+    private double calculatePredictedRating(Map.Entry<Cs214User, TreeMap<Double, Cs214User>> userEntry,
+            Map.Entry<String, Double> songEntry) {
+        double predictedRating = Double.NaN;
+
+        // Loop through target user similar user list
+        for (Map.Entry<Double, Cs214User> similarUserEntry : userEntry.getValue().entrySet()) {
+            // get most similar user (other user) and check to see if they rated
+            // targetuser's song
+            TreeMap<String, Double> songListUser2 = similarUserEntry.getValue().getSongList();
+            Double user2SongRating = songListUser2.get(songEntry.getKey());
+
+            if (!user2SongRating.isNaN()) { // checks if valid rating
+                double otherUserNormalizedRating = similarUserEntry.getValue().getSongNormalizedRating(user2SongRating);
+
+                // de-normalizing predicted rating
+                predictedRating = Math.round(otherUserNormalizedRating * userEntry.getKey().getStandardDeviation()
+                        + userEntry.getKey().getRunningMean());
+
+                Math.max(1.0, Math.min(5.0, predictedRating));
+                break;
+            }
+        }
+
+        return predictedRating;
     }
 
     /**
@@ -472,8 +433,6 @@ public class SongUserServicePA4 {
     public void outputUsersSongsRatingsCSV(String outputFile) throws IOException {
         validateArguments(outputFile);
 
-        CSVPrinterService printerService = null;
-
         try {
             String[] headers = new String[] { "name1", "name2", "similarity" };
 
@@ -481,14 +440,25 @@ public class SongUserServicePA4 {
 
             List<Map.Entry<String, Cs214User>> usersArray = new ArrayList<>(this.userList.entrySet());
 
-            for (int i = 0; i < userSimilarityMatrix.length; i++) {
-                for (int j = i+1; j < userSimilarityMatrix.length; j++) {
-                    printRecord(printerService, i, j, usersArray.get(i).getKey(), usersArray.get(j).getKey());
-                }
+            for (int rowIndex = 0; rowIndex < userSimilarityMatrix.length; rowIndex++) {
+                printDataRow(usersArray, rowIndex);
             }
         } finally {
             if (printerService != null) {
                 printerService.closeCSVFile();
+            }
+        }
+    }
+
+    private void printDataRow(List<Map.Entry<String, Cs214User>> usersArray, int rowIndex) throws IOException {
+        for (int colIndex = rowIndex + 1; colIndex < userSimilarityMatrix.length; colIndex++) {
+            Double similariyValue = this.userSimilarityMatrix[rowIndex][colIndex];
+
+            if (similariyValue != null && rowIndex != colIndex
+                    && (similariyValue >= 0.0 || similariyValue.equals(Double.NaN))) {
+                Object[] values = { usersArray.get(rowIndex).getKey(), usersArray.get(colIndex).getKey(),
+                        similariyValue };
+                printerService.printRecord(values);
             }
         }
     }
@@ -506,11 +476,13 @@ public class SongUserServicePA4 {
             for (Map.Entry<String, Double> predictionEntry : this.userSongRatingPredictions.entrySet()) {
                 String[] keys = predictionEntry.getKey().split(",");
                 String valuePredictionEntry = null;
+
                 if (predictionEntry.getValue().isNaN()) {
                     valuePredictionEntry = predictionEntry.getValue().toString();
                 } else {
                     valuePredictionEntry = Integer.toString(predictionEntry.getValue().intValue());
                 }
+
                 Object[] values = { keys[0], keys[1], valuePredictionEntry };
                 printerService.printRecord(values);
             }
@@ -519,26 +491,6 @@ public class SongUserServicePA4 {
             if (printerService != null) {
                 printerService.closeCSVFile();
             }
-        }
-    }
-
-    /**
-     * Outputs values objects array with user 1 name, user2 name, and dimensions
-     * matrix.
-     * 
-     * @param printerService CSV printer used to print record.
-     * @param i              Index 1 of matrix.
-     * @param j              Index 2 of matrix.
-     * @param userName1      User 1's name.
-     * @param userName2      User 2's name.
-     * @throws IOException If printer fails.
-     */
-    private void printRecord(CSVPrinterService printerService, int i, int j, String userName1, String userName2)
-            throws IOException {
-        if (this.userSimilarityMatrix[i][j] != null && (i != j && this.userSimilarityMatrix[i][j] >= 0.0
-                || this.userSimilarityMatrix[i][j].equals(Double.NaN))) {
-            Object[] values = { userName1, userName2, userSimilarityMatrix[i][j] };
-            printerService.printRecord(values);
         }
     }
 }

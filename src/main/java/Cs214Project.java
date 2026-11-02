@@ -77,39 +77,43 @@ public class Cs214Project {
 
             String PASelector = args.length == 3 || args.length == 4 ? args[2] : ""; // Which PA?
             // factory
-            switch (PASelector) {
-                case "-a" -> {
-                    // PA2 PA service factory
-                    SongUserServicePA2 SongUserServicePA2 = new SongUserServicePA2();
-                    SongUserServicePA2.loadAndProcessData(input);
-                    SongUserServicePA2.outputUsersSongsRatingsCSV(output);
-                }
-                case "-3" -> { //????
-                    //PA3
-                    SongUserServicePA3V2 SongUserServicePA3 = new SongUserServicePA3V2();
-                    SongUserServicePA3.loadAndProcessData(input);
-                    SongUserServicePA3.outputUsersSongsRatingsCSV(output);
-                }
-                case "-u" -> {
-                    //PA4
-                    SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
-                    SongUserServicePA4.loadAndProcessDataUserSimilarity(input);
-                    SongUserServicePA4.outputUsersSongsRatingsCSV(output);
-                }
-                case "-p" ->{
-                    SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
-                    SongUserServicePA4.loadAndProcessDataPrediction(input);
-                    SongUserServicePA4.outputUsersSongsRatingPredictionsCSV(output);
-                }
-                default -> {
-                    // PA1
-                    SongUserServicePA1 SongUserServicePA1 = new SongUserServicePA1();
-                    LoadSongsandUsersFromCSV_Result songsAndUsers = SongUserServicePA1.loadSongsandUsersFromCSV(input);
-                    SongUserServicePA1.outputUsersSongsRatingsCSV(output, songsAndUsers.songList);
-                }
-            }
+            processPA(input, output, PASelector);
         } catch (Exception e) {
             util_FormatOutput.printError(e.getMessage());
+        }
+    }
+
+    private static void processPA(String input, String output, String PASelector) throws IOException {
+        switch (PASelector) {
+            case "-a" -> {
+                // PA2 PA service factory
+                SongUserServicePA2 SongUserServicePA2 = new SongUserServicePA2();
+                SongUserServicePA2.loadAndProcessData(input);
+                SongUserServicePA2.outputUsersSongsRatingsCSV(output);
+            }
+            // case "-u" -> { //????
+            //     //PA3
+            //     SongUserServicePA3V2 SongUserServicePA3 = new SongUserServicePA3V2();
+            //     SongUserServicePA3.loadAndProcessData(input);
+            //     SongUserServicePA3.outputUsersSongsRatingsCSV(output);
+            // }
+            case "-u" -> {
+                //PA4
+                SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
+                SongUserServicePA4.loadAndProcessDataUserSimilarity(input);
+                SongUserServicePA4.outputUsersSongsRatingsCSV(output);
+            }
+            case "-p" ->{
+                SongUserServicePA4 SongUserServicePA4 = new SongUserServicePA4();
+                SongUserServicePA4.loadAndProcessDataPrediction(input);
+                SongUserServicePA4.outputUsersSongsRatingPredictionsCSV(output);
+            }
+            default -> {
+                // PA1
+                SongUserServicePA1 SongUserServicePA1 = new SongUserServicePA1();
+                LoadSongsandUsersFromCSV_Result songsAndUsers = SongUserServicePA1.loadSongsandUsersFromCSV(input);
+                SongUserServicePA1.outputUsersSongsRatingsCSV(output, songsAndUsers.songList);
+            }
         }
     }
 }
